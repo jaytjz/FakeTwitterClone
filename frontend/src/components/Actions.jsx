@@ -1,7 +1,33 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify/react/dist/iconify.js';
+import useAxios from 'axios-hooks';
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import toast from 'react-hot-toast';
 
 const Actions = ({ openRegisterModal, openLoginModal }) => {
+    const signIn = useSignIn();
+
+    const [{ loading }, executeLogin] = useAxios(
+        { data: { username: 'DemoMan', password: 'thisisademo' }, url: `${import.meta.env.VITE_API_URL}/login`, method: 'POST' },
+        { manual: true }
+    );
+
+    const demoLogin = async () => {
+        const res = await toast.promise(executeLogin(), { loading: 'Logging in...', success: 'Welcome Back!', error: 'Wrong Username/Password' });
+
+        signIn({
+            auth: {
+                token: res.data.token,
+                type: 'Bearer'
+            },
+            userState: res.data.user
+        });
+
+        setTimeout(() => {
+            navigate('/timeline');
+        }, 1000);
+    }
+
     return(
         <Container>
             <div className="cta">
@@ -27,7 +53,7 @@ const Actions = ({ openRegisterModal, openLoginModal }) => {
                         <Button $negative>
                             Sign in
                         </Button>
-                        <Button $negative>
+                        <Button onClick={demoLogin} $negative>
                             Try the demo account
                         </Button>
                     </div>
