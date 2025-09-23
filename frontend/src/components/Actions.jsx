@@ -45,12 +45,12 @@ const Actions = ({ openRegisterModal, openLoginModal }) => {
                             <span>or</span>
                         <Line/>
                     </div>
-                    <Button $primary>
+                    <Button onClick={openRegisterModal} $primary>
                         Create Account
                     </Button>
                     <div className='sign-in'>
                         <span>Already have an account?</span>
-                        <Button $negative>
+                        <Button onClick={openLoginModal} $negative>
                             Sign in
                         </Button>
                         <Button onClick={demoLogin} $negative>

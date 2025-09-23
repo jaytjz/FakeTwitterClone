@@ -1,9 +1,13 @@
 import styled from 'styled-components';
 import TNTLogo from '../assets/ttn-logo.png';
 import { useState, useEffect } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 
+import Modal from '../components/Modal';
 import Actions from '../components/Actions';
 import SmallPrint from '../components/SmallPrint';
+import Register from '../components/Register';
+import Login from '../components/Login';
 
 const Landing = () => {
     const [registerModalIsOpen, setRegisterModalIsOpen] = useState(false);
@@ -12,6 +16,13 @@ const Landing = () => {
     const openLoginModal = () => setLoginModalIsOpen(true);
 
     return (
+        <>
+        <Modal isOpen={registerModalIsOpen} setIsOpen={setRegisterModalIsOpen} shouldCloseOnOverlayClick={false}>
+            <Register />
+        </Modal>
+        <Modal isOpen={loginModalIsOpen} setIsOpen={setLoginModalIsOpen} shouldCloseOnOverlayClick={false}>
+            <Login openRegisterModal={openRegisterModal} />
+        </Modal>
         <Wrapper>
             <div className="logo-container">
                 <img src={TNTLogo} alt="TNT Logo" />
@@ -19,6 +30,8 @@ const Landing = () => {
             <Actions openRegisterModal={openRegisterModal} openLoginModal={openLoginModal} />
             <SmallPrint />
         </Wrapper>
+        <Toaster position="top-center" />
+        </>
     )
 }
 

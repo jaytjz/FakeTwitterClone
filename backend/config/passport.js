@@ -13,7 +13,7 @@ exports.strategy = new JwtStrategy(options, async (payload, done) => {
     if (!user) return done(null, false);
 
     return done(null, user);
-  } catch (err) {
+  } catch (err) { 
     done(err, null);
   }
 });
