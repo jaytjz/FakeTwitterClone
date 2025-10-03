@@ -1,6 +1,10 @@
 import styled from 'styled-components';
 import TNTLogo from '../assets/ttn-logo.png';
 import { useState, useEffect } from 'react';
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import useAxios from 'axios-hooks';
 import { Toaster, toast } from 'react-hot-toast';
 
 import Modal from '../components/Modal';
@@ -15,8 +19,38 @@ const Landing = () => {
     const openRegisterModal = () => setRegisterModalIsOpen(true);
     const openLoginModal = () => setLoginModalIsOpen(true);
 
+    const isAuthenticated = useIsAuthenticated();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const signIn = useSignIn();
+
+    const [, executeGithubLogin] = useAxios({ url: import.meta.env.VITE_API_URL + '/githubLogin', method: 'POST' }, { manual: true, autoCancel: true });
+
+    useEffect(() => {
+        const login = async () => {
+        try {
+            const code = searchParams.get('code');
+            if (code) {
+            const res = await toast.promise(
+                executeGithubLogin({ data: { code } }),
+                {
+                loading: 'Logging in with GitHub...',
+                success: 'Logged in! Redirecting...',
+                error: 'Something went wrong'
+                },
+                { id: 'login' }
+            );
+            signIn({ auth: { token: res.data.token, type: 'Bearer' }, userState: res.data.user });
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        };
+        login();
+    }, []);
+
     return (
         <>
+        {isAuthenticated && <Navigate to="/timeline" />}
         <Modal isOpen={registerModalIsOpen} setIsOpen={setRegisterModalIsOpen} shouldCloseOnOverlayClick={false}>
             <Register />
         </Modal>

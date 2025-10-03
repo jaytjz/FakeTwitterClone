@@ -3,64 +3,67 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import useAxios from 'axios-hooks';
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+
+const redirectToGithub = () => window.location.assign(`https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}`);
 
 const Actions = ({ openRegisterModal, openLoginModal }) => {
-    const signIn = useSignIn();
+  const signIn = useSignIn();
+  const navigate = useNavigate();
 
-    const [{ loading }, executeLogin] = useAxios(
-        { data: { username: 'DemoMan', password: 'thisisademo' }, url: `${import.meta.env.VITE_API_URL}/login`, method: 'POST' },
-        { manual: true }
-    );
+  const [{ loading }, executeLogin] = useAxios(
+    { data: { username: 'DemoMan', password: 'thisisademo' }, url: `${import.meta.env.VITE_API_URL}/login`, method: 'POST' },
+    { manual: true }
+  );
 
-    const demoLogin = async () => {
-        const res = await toast.promise(executeLogin(), { loading: 'Logging in...', success: 'Welcome Back!', error: 'Wrong Username/Password' });
+  const demoLogin = async () => {
+    const res = await toast.promise(executeLogin(), { loading: 'Logging in...', success: 'Welcome Back!', error: 'Wrong Username/Password' });
+    signIn({
+      auth: {
+        token: res.data.token,
+        type: 'Bearer'
+      },
+      userState: res.data.user
+    });
 
-        signIn({
-            auth: {
-                token: res.data.token,
-                type: 'Bearer'
-            },
-            userState: res.data.user
-        });
+    setTimeout(() => {
+      navigate('/timeline');
+    }, 1000);
+  };
 
-        setTimeout(() => {
-            navigate('/timeline');
-        }, 1000);
-    }
-
-    return(
-        <Container>
-            <div className="cta">
-                <h1>Happening Now</h1>
-                <h2>Join today.</h2>
-            </div>
-            <div className='actions'>
-                <div className="buttons">
-                    <Button>
-                        <Icon className="btn-icon" icon="ph:github-logo-fill" />
-                        Sign up with GitHub
-                    </Button>
-                    <div className='separator'>
-                        <Line />
-                            <span>or</span>
-                        <Line/>
-                    </div>
-                    <Button onClick={openRegisterModal} $primary>
-                        Create Account
-                    </Button>
-                    <div className='sign-in'>
-                        <span>Already have an account?</span>
-                        <Button onClick={openLoginModal} $negative>
-                            Sign in
-                        </Button>
-                        <Button onClick={demoLogin} $negative>
-                            Try the demo account
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </Container>
-    )
+  return(
+      <Container>
+          <div className="cta">
+              <h1>Happening Now</h1>
+              <h2>Join today.</h2>
+          </div>
+          <div className='actions'>
+              <div className="buttons">
+                  <Button onClick={redirectToGithub}>
+                      <Icon className="btn-icon" icon="ph:github-logo-fill" />
+                      Sign up with GitHub
+                  </Button>
+                  <div className='separator'>
+                      <Line />
+                          <span>or</span>
+                      <Line/>
+                  </div>
+                  <Button onClick={openRegisterModal} $primary>
+                      Create Account
+                  </Button>
+                  <div className='sign-in'>
+                      <span>Already have an account?</span>
+                      <Button onClick={openLoginModal} $negative>
+                          Sign in
+                      </Button>
+                      <Button onClick={demoLogin} $negative>
+                          Try the demo account
+                      </Button>
+                  </div>
+              </div>
+          </div>
+      </Container>
+  )
 }
 
 export default Actions

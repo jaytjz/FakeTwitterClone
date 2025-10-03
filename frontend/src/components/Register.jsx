@@ -2,6 +2,11 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import styled from 'styled-components';
 import { Formik, Form, useField } from 'formik';
 import * as Yup from 'yup';
+import useAxios from 'axios-hooks';
+import { ClipLoader } from 'react-spinners';
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { Navigate } from 'react-router-dom';
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
 
 import { useModal } from './Modal';
 
@@ -9,9 +14,36 @@ import TNTLogo from '../assets/ttn-logo.png';
 
 const Register = () => {
     const { closeModal } = useModal();
+    const [{ loading }, executeRegister] = useAxios({ url: `${import.meta.env.VITE_API_URL}/register`, method: 'POST' }, { manual: true });
+    const signIn = useSignIn();
+    const isAuthenticated = useIsAuthenticated();
+
+    const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+      try {
+        const res = await executeRegister({ data: { username: values.username, email: values.email, password: values.password } });
+        signIn({
+          auth: {
+            token: res.data.token,
+            type: 'Bearer'
+          },
+          userState: res.data.user
+        });
+        setSubmitting(false);
+      } catch (err) {
+        if (err?.response && err?.response.data.type === 'bodyValidation') {
+          const errors = {};
+          err.response.data.err.forEach((el) => {
+            errors[el.path] = el.msg;
+          });
+          setErrors(errors);
+        }
+        console.log(err);
+      }
+    };
 
     return (
         <>
+        {isAuthenticated && <Navigate to="/timeline" />}
         <Wrapper>
             <Header>
                 <Icon onClick={closeModal} className="close-icon" icon="ph:x-bold" />
@@ -23,13 +55,33 @@ const Register = () => {
                 <div className="title">
                     <h1>Create Your Account</h1>
                 </div>
-                <Formik>
+                <Formik
+                  initialValues={{
+                    username: '',
+                    email: '',
+                    password: '',
+                    confirmPassword: ''
+                  }}
+                  validationSchema={Yup.object({
+                    username: Yup.string()
+                      .required('Required')
+                      .min(3, 'Username must be at least 3 characters long')
+                      .max(15, 'Username must be less than 15 characters long'),
+                    email: Yup.string().required('Required').email('Must be a valid email address'),
+                    password: Yup.string().required('Required').min(6, 'Must be at least 6 characters long'),
+                    confirmPassword: Yup.string()
+                      .required('Required')
+                      .min(6, 'Must be at least 6 characters long')
+                      .oneOf([Yup.ref('password'), null], 'Passwords must match')
+                  })}
+                  onSubmit={handleSubmit}
+                >
                     <Form className="register-form">
                         <Input label="Username" name="username" type="text" />
                         <Input label="Email" name="email" type="email" />
                         <Input label="Password" name="password" type="password" />
                         <Input label="Confirm Password" name="confirmPassword" type="password" />
-                        <SubmitButton type="submit">Register</SubmitButton>
+                        <SubmitButton type="submit">{loading ? <ClipLoader /> : 'Register'}</SubmitButton>
                     </Form>
                 </Formik>
             </Content>

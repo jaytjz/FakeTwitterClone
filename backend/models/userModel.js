@@ -30,29 +30,19 @@ const userSchema = new Schema(
     followers: [{ type: mongoose.Types.ObjectId, required: true, ref: 'User' }],
     following: [{ type: mongoose.Types.ObjectId, required: true, ref: 'User' }],
     tweets: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Tweet' }],
-    // **Only define the index here**
-    githubID: {
-      type: Number,
-      unique: true,
-      sparse: true,
-      default: '',
-      partialFilterExpression: {
-        githubID: { $exists: true, $gt: '' }
-      }
-    }
+    githubID: { type: Number, unique: true, sparse: true, default: '' }
   },
   { timestamps: true }
 );
 
-// **Remove this separate index call**
-// userSchema.index(
-//   { githubID: 1 },
-//   {
-//     unique: true,
-//     partialFilterExpression: {
-//       githubID: { $exists: true, $gt: '' }
-//     }
-//   }
-// );
+userSchema.index(
+  { githubID: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      githubID: { $exists: true, $gt: '' }
+    }
+  }
+);
 
 module.exports = mongoose.model('User', userSchema);

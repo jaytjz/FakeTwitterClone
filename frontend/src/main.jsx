@@ -1,7 +1,8 @@
 import ReactDOM from 'react-dom/client';
-import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
+import AuthProvider from 'react-auth-kit';
 import './index.css';
+
 import Router from './Router.jsx';
 
 const store = createStore({

@@ -16,54 +16,90 @@ import { Button } from './Actions';
 
 import TNTLogo from '../assets/ttn-logo.png';
 
-
 const Login = ({ openRegisterModal }) => {
-    const { closeModal } = useModal();
+  const { closeModal } = useModal();
+  const [{ loading }, executeLogin] = useAxios({ url: `${import.meta.env.VITE_API_URL}/login`, method: 'POST' }, { manual: true });
+  const signIn = useSignIn();
+  const isAuthenticated = useIsAuthenticated();
 
-    const handleSignUpClick = () => {
-        closeModal();
-        openRegisterModal();
-    };
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    try {
+      const res = await executeLogin({ data: { username: values.username, password: values.password } });
+      signIn({
+        auth: {
+          token: res.data.token,
+          type: 'Bearer'
+        },
+        userState: res.data.user
+      });
+      toast.success('Welcome Back!');
+      setSubmitting(false);
+    } catch (err) {
+      if (err?.response) {
+        const errors = { username: 'Wrong Username/Password', password: 'Wrong Username/Password' };
+        setErrors(errors);
+      }
+      console.log(err);
+    }
+  };
 
-    return (
-        <>
-        <Wrapper>
-            <Header>
-                <Icon onClick={closeModal} className="close-icon" icon="ph:x-bold" />
-                <div className="img">
-                    <img src={TNTLogo} alt="TNT Logo" />
-                </div>
-            </Header>   
-            <Content>
-                <div className="title">
-                    <h1>Sign in to TTN</h1>
-                </div>
-                <Button onClick>
-                    <Icon className="btn-icon" icon="ph:github-logo-fill" />
-                    Log in with GitHub
-                </Button>
-                <div className="separator">
-                    <Line />
-                    <span>or</span>
-                    <Line />
-                </div>
-                <Formik>
-                    <Form className="register-form">
-                        <Input label="Username or Email" name="username" type="text" />
-                        <Input label="Password" name="password" type="password" />
-                        <SubmitButton type="submit">Login</SubmitButton>
-                    </Form>
-                </Formik>
-                <span className="register-link">
-                    Don't have an account? <a onClick={handleSignUpClick}>Sign up</a>
-                </span>
-            </Content>
-        </Wrapper>
-        </>
-    )
-}
+  const handleSignUpClick = () => {
+    closeModal();
+    openRegisterModal();
+  };
 
-export default Login
+  const redirectToGithub = () => window.location.assign(`https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}`);
+
+  return (
+    <>
+      {isAuthenticated && <Navigate to="/timeline" />}
+      <Wrapper>
+        <Header>
+          <Icon onClick={closeModal} className="close-icon" icon="ph:x-bold" />
+          <div className="img">
+            <img src={TNTLogo} alt="TNT Logo" />
+          </div>
+        </Header>
+        <Content>
+          <div className="title">
+            <h1>Sign in to TTN</h1>
+          </div>
+          <Button onClick={redirectToGithub}>
+            <Icon className="btn-icon" icon="ph:github-logo-fill" />
+            Log in with GitHub
+          </Button>
+          <div className="separator">
+            <Line />
+            <span>or</span>
+            <Line />
+          </div>
+          <Formik
+            initialValues={{
+              username: '',
+              password: ''
+            }}
+            validationSchema={Yup.object({
+              username: Yup.string().required('Required'),
+              password: Yup.string().required('Required')
+            })}
+            onSubmit={handleSubmit}
+          >
+            <Form className="register-form">
+              <Input label="Username or Email" name="username" type="text" />
+              <Input label="Password" name="password" type="password" />
+              <SubmitButton type="submit">{loading ? <ClipLoader /> : 'Login'}</SubmitButton>
+            </Form>
+          </Formik>
+          <span className="register-link">
+            Don't have an account? <a onClick={handleSignUpClick}>Sign up</a>
+          </span>
+        </Content>
+      </Wrapper>
+    </>
+  );
+};
+
+export default Login;
 
 const FormGroup = styled.div`
   display: flex;

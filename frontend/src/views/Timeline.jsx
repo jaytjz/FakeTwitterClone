@@ -1,18 +1,44 @@
 import styled from 'styled-components';
 import { Toaster } from 'react-hot-toast';
+import useAxios from 'axios-hooks';
+import { useState, useEffect, createContext, useContext } from 'react';
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
 import Navbar from '../components/Navbar';
+import { useGlobal } from '../Router';
+
+import { TimelineContext } from '../context/TimelineContext';
 
 const Timeline = () => {
+  const { replyTo, modalIsOpen, setModalIsOpen } = useGlobal();
+  const authHeader = useAuthHeader();
+  const auth = useAuthUser();
 
-    return (
-        <>
+  const [offset, setOffset] = useState(0);
+  const [tweets, setTweets] = useState([]);
+
+  const [{ loading, data }, refreshTweets] = useAxios({
+    url: import.meta.env.VITE_API_URL + `/users/${auth._id}/timeline`,
+    method: 'GET',
+    data: { offset },
+    headers: { Authorization: authHeader }
+  });
+
+  useEffect(() => {
+    if (data?.tweets) setTweets(data?.tweets);
+  }, [data]);
+
+  return (
+      <>
+      <TimelineContext.Provider value={{ loading, tweets, setTweets, offset, setOffset, refreshTweets }}>
         <Wrapper>
             <Toaster toastOptions={toastOptions} />
             <Navbar />
         </Wrapper>
-        </>
-    );
+      </TimelineContext.Provider>
+      </>
+  );
 };
 
 export default Timeline;
