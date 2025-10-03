@@ -6,6 +6,9 @@ import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
 import Navbar from '../components/Navbar';
+import Feed from '../components/Feed';
+import Discover from '../components/Discover';
+//import PopUpTweetForm from '../components/PopUpTweetForm';
 import { useGlobal } from '../Router';
 
 import { TimelineContext } from '../context/TimelineContext';
@@ -30,14 +33,16 @@ const Timeline = () => {
   }, [data]);
 
   return (
-      <>
+    <>
       <TimelineContext.Provider value={{ loading, tweets, setTweets, offset, setOffset, refreshTweets }}>
         <Wrapper>
-            <Toaster toastOptions={toastOptions} />
-            <Navbar />
+          <Toaster toastOptions={toastOptions} />
+          <Navbar />
+          <Feed />
+          <Discover />
         </Wrapper>
       </TimelineContext.Provider>
-      </>
+    </>
   );
 };
 

@@ -22,6 +22,7 @@ exports.registerPOST = [
       const usernameExists = await User.findOne({ username: val });
       if (usernameExists) throw new Error('Username already exists');
     }),
+  body('displayName').trim().isLength({ min: 2, max: 15 }).withMessage('Display Name must be between 2 and 15 characters long').optional(),
   body('password', 'Password must be at least 6 characters long').trim().isLength({ min: 6 }),
   asyncHandler(async (req, res) => {
     // Check for errors in body
