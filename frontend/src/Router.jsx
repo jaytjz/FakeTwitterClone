@@ -2,8 +2,12 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
 import { useContext, createContext, useState } from 'react';
 
-import Landing from './views/Landing.jsx';
-import Timeline from './views/Timeline.jsx';
+import Landing from './views/Landing';
+import Timeline from './views/Timeline';
+import Profile from './views/Profile';
+import Search from './views/Search';
+import Explore from './views/Explore';
+import TweetDetail from './views/TweetDetail';
 
 const GlobalContext = createContext();
 
@@ -26,8 +30,29 @@ const Router = () => {
       element: <Landing />
     },
     {
-      path: '/timeline',
-      element: <Timeline />
+      element: <AuthOutlet fallbackPath="/" />,
+      children: [
+        {
+          path: '/timeline',
+          element: <Timeline />
+        },
+        {
+          path: '/explore',
+          element: <Explore />
+        }
+      ]
+    },
+    {
+      path: '/search',
+      element: <Search />
+    },
+    {
+      path: '/:username',
+      element: <Profile />
+    },
+    {
+      path: '/:username/status/:tweetID',
+      element: <TweetDetail />
     }
   ]);
 

@@ -14,10 +14,17 @@ import { Button as BaseButton } from '../components/Actions';
 
 const Navbar = () => {
   const auth = useAuthUser();
+  const [cookies] = useCookies(['_auth_state']);
   const isAuthenticated = useIsAuthenticated();
   const { openTweetModal } = useGlobal();
 
   const [authData, setAuthData] = useState(auth);
+
+  useEffect(() => {
+    if (cookies._auth_state && cookies._auth_state.username !== auth?.username) {
+      setAuthData(cookies._auth_state);
+    }
+  }, [cookies._auth_state, auth?.username]);
 
   return (
       <>
@@ -41,14 +48,16 @@ const Navbar = () => {
                           <span>Explore</span>
                       </div>
                   </Link>
-                  <Link>
+                  {isAuthenticated ? (
+                    <Link to={isAuthenticated ? `/${authData.username}` : null}>
                       <div className="item">
-                      <Icon icon="ph:user-fill" />
-                      <span>Profile</span>
+                        <Icon icon="ph:user-fill" />
+                        <span>Profile</span>
                       </div>
-                  </Link>
-                  <Button $primary>
-                      Post
+                    </Link>
+                  ) : null}
+                  <Button onClick={() => openTweetModal()} $primary $disabled={!isAuthenticated}>
+                    Post
                   </Button>
                   {isAuthenticated && <UserCard user={authData} />}
               </div>
